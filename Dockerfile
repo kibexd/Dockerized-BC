@@ -1,11 +1,18 @@
-# Use Business Central base image
-FROM mcr.microsoft.com/dynamics-nav:latest
+# Use an official Windows Server Core base image
+FROM mcr.microsoft.com/windows/servercore:ltsc2019
 
-# Optional: Add maintainer information
-LABEL maintainer="Your Name <your.email@example.com>"
+# Install necessary tools
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop';"]
 
-# Expose ports for web and development access
-EXPOSE 80 443
+# Install PowerShell and BC Container Helper
+RUN Install-PackageProvider -Name NuGet -Force; \
+    Install-Module -Name 'Microsoft.Dynamics.Nav.ContainerHelper' -Force
 
-# Default command
-CMD ["pwsh"]
+# Set working directory
+WORKDIR /bc-setup
+
+# Copy any necessary setup scripts
+COPY setup.ps1 ./
+
+# Default command to set up Business Central
+CMD ["powershell", "-File", "setup.ps1"]
