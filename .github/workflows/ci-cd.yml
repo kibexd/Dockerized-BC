@@ -8,24 +8,13 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v3
 
-    - name: Set up Docker
-      uses: actions/setup-docker@v2
-      with:
-        version: latest
-
-    - name: Install BC Container Helper
-      run: |
-        Install-Module -Name 'Microsoft.Dynamics.Nav.ContainerHelper' -Force
-        Import-Module 'Microsoft.Dynamics.Nav.ContainerHelper'
-
-    - name: Build Docker Image
-      run: |
-        docker build -t bc24bcscript:latest .
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
 
     - name: Login to Docker Hub
       uses: docker/login-action@v2
@@ -33,7 +22,14 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Push Docker Image
+    - name: Build and Push Docker Image
+      uses: docker/build-push-action@v3
+      with:
+        context: .
+        push: true
+        tags: kibexd24/murimatestbcscript:latest
+
+    - name: Deploy to Test Environment
       run: |
-        docker tag bc24bcscript:latest ${{ secrets.DOCKER_USERNAME }}/bc24bcscript:latest
-        docker push ${{ secrets.DOCKER_USERNAME }}/bc24bcscript:latest
+        docker pull kibexd24/murimatestbcscript:latest
+        docker run -d --name business-central-test -p 8080:80 kibexd24/murimatestbcscript:latest
