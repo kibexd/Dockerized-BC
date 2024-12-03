@@ -1,15 +1,19 @@
-# Use PowerShell Core image
-FROM mcr.microsoft.com/powershell:latest
+# Use an official Windows base image that supports PowerShell
+FROM mcr.microsoft.com/windows/servercore:ltsc2022
 
-# Install necessary PowerShell modules
-RUN pwsh -Command "Install-Module -Name 'Microsoft.Dynamics.Nav.ContainerHelper' -Force" \
-    && pwsh -Command "Install-Module -Name 'BcContainerHelper' -Force"
+# Switch to PowerShell
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop';"]
 
-# Copy setup scripts
-COPY setup.ps1 /scripts/setup.ps1
+# Install necessary components
+RUN Install-PackageProvider -Name NuGet -Force; \
+    Install-Module -Name 'Microsoft.Dynamics.Nav.ContainerHelper' -Force -AllowClobber; \
+    Install-Module -Name 'BcContainerHelper' -Force -AllowClobber
 
 # Set working directory
-WORKDIR /scripts
+WORKDIR /bc-setup
 
-# Default entrypoint
-ENTRYPOINT ["pwsh", "-File", "setup.ps1"]
+# Copy deployment script
+COPY deploy.ps1 .
+
+# Default command to run deployment
+CMD ["powershell", "-File", "deploy.ps1"]
