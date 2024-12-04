@@ -16,11 +16,5 @@ RUN Install-PackageProvider -Name NuGet -Force; \
 # Step 2: Install the BcContainerHelper module
 RUN Install-Module -Name 'BcContainerHelper' -Force -AllowClobber;
 
-# Step 3: Additional custom setup if needed
-COPY my-init-script.ps1 C:/Run/
-
-# Step 4: Run your script (if applicable)
-RUN powershell -ExecutionPolicy Bypass -File C:/Run/my-init-script.ps1
-
 # Expose ports (adjust as needed for Business Central)
 EXPOSE 80 443
