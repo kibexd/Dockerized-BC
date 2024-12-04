@@ -1,19 +1,23 @@
-# Use an official Windows base image that supports PowerShell
+# Use Windows Server Core as the base image
 FROM mcr.microsoft.com/windows/servercore:ltsc2022
 
-# Switch to PowerShell
+# Use PowerShell as the default shell
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop';"]
 
-# Install necessary components
+# Step 1: Ensure the NuGet Provider is installed and up-to-date
 RUN Install-PackageProvider -Name NuGet -Force; \
-    Install-Module -Name 'Microsoft.Dynamics.Nav.ContainerHelper' -Force -AllowClobber; \
-    Install-Module -Name 'BcContainerHelper' -Force -AllowClobber
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; \
+    Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted; \
+    Register-PSRepository -Name 'PSGallery' -SourceLocation 'https://www.powershellgallery.com/api/v2' -InstallationPolicy Trusted;
 
-# Set working directory
-WORKDIR /bc-setup
+# Step 2: Install the BcContainerHelper module
+RUN Install-Module -Name 'BcContainerHelper' -Force -AllowClobber;
 
-# Copy deployment script
-COPY deploy.ps1 .
+# Step 3: Additional custom setup if needed
+COPY my-init-script.ps1 C:/Run/
 
-# Default command to run deployment
-CMD ["powershell", "-File", "deploy.ps1"]
+# Step 4: Run your script (if applicable)
+RUN powershell -ExecutionPolicy Bypass -File C:/Run/my-init-script.ps1
+
+# Expose ports (adjust as needed for Business Central)
+EXPOSE 80 443
