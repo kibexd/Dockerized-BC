@@ -7,8 +7,11 @@ SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop';"]
 # Step 1: Ensure the NuGet Provider is installed and up-to-date
 RUN Install-PackageProvider -Name NuGet -Force; \
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; \
-    Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted; \
-    Register-PSRepository -Name 'PSGallery' -SourceLocation 'https://www.powershellgallery.com/api/v2' -InstallationPolicy Trusted;
+    if (!(Get-PSRepository -Name 'PSGallery' -ErrorAction SilentlyContinue)) { \
+        Register-PSRepository -Default; \
+    } else { \
+        Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted; \
+    }
 
 # Step 2: Install the BcContainerHelper module
 RUN Install-Module -Name 'BcContainerHelper' -Force -AllowClobber;
