@@ -31,4 +31,4 @@ jobs:
     - name: Deploy to Test Environment
       run: |
         docker pull kibexd24/murimatestbcscript:latest
-        docker run -d --name business-central-test -p 8080:80 kibexd24/murimatestbcscript:latest
+        docker run -d --name business-central-test -p 7390:80 -p 73:443 kibexd24/murimatestbcscript:latest

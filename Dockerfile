@@ -16,5 +16,5 @@ RUN Install-PackageProvider -Name NuGet -Force; \
 # Step 2: Install the BcContainerHelper module
 RUN Install-Module -Name 'BcContainerHelper' -Force -AllowClobber;
 
-# Expose ports (adjust as needed for Business Central)
+# Expose HTTP and HTTPS ports
 EXPOSE 80 443
