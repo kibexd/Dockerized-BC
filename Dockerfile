@@ -4,7 +4,7 @@ FROM mcr.microsoft.com/windows/servercore:ltsc2022
 # Use PowerShell as the default shell
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop';"]
 
-# Step 1: Ensure the NuGet Provider is installed and up-to-date
+# Step 1: Install NuGet and BcContainerHelper
 RUN Install-PackageProvider -Name NuGet -Force; \
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; \
     if (!(Get-PSRepository -Name 'PSGallery' -ErrorAction SilentlyContinue)) { \
@@ -12,9 +12,11 @@ RUN Install-PackageProvider -Name NuGet -Force; \
     } else { \
         Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted; \
     }
-
-# Step 2: Install the BcContainerHelper module
 RUN Install-Module -Name 'BcContainerHelper' -Force -AllowClobber;
 
-# Expose HTTP and HTTPS ports
-EXPOSE 80 443
+# Step 2: Start IIS or Business Central Web Server (adjust path if required)
+RUN Install-WindowsFeature -Name Web-Server; \
+    Start-Service W3SVC;
+
+# Default command to keep the container running
+ENTRYPOINT ["powershell.exe", "-NoLogo", "-ExecutionPolicy", "Bypass"]
